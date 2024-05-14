@@ -29,7 +29,7 @@ Transformamos el fichero Flights.parquet a un fichero Flights.json con el script
 
 Se ha creado un fichero compose único [docker-compose.yaml](./docker-compose.yaml) que define un clúster Kafka (bitnami/kafka y bitnami/zookeeper), un productor que genera eventos de topic "My_Topic" extraídos de Flights.json, un servidor Druid y un servidor Superset, todos ellos conectados a una red llamada kafka-net. El productor se construye a partir del fichero [Dockerfile](./Dockerfile), el cual instala las librerías necesarias para ejecutar el script [event_generator.py](./event_generator.py) que envía eventos al topic "My_Topic", utilizando la información del fichero [config.yaml](./config.yaml) para conectarse al servidor Kafka.
 
-![alt text](image.png)
+![alt text](./fotos/image.png)
 
 
 Una vez lanzados los servicios `docker compose up -d`, nos conectamos al contenedor productor y ejecutamos el script [event_generator.py](./event_generator.py) para enviar mensajes al topic flights.
@@ -42,37 +42,37 @@ En este momento, el productor está enviando eventos al topic "My_Topic". Para q
 
 Seleccionamos la opción "Kafka" y rellenamos los campos con la información necesaria para conectarnos al servidor Kafka y al topic "My_Topic":
 
-![alt text](connect2Druid.png)
+![alt text](./fotos/connect2Druid.png)
 
-![alt text](parse.png)
+![alt text](./fotos/parse.png)
 
 Vamos a indexar por la columna "FL_DATE" con formato "millis" y 
 
-![alt text](indexacion.png)
+![alt text](./fotos/indexacion.png)
 
 Seleccionamos "Use early offset" y "Status Pending" para que los eventos sean indexados en cuanto lleguen al servidor Druid:
 
-![alt text](useearlyoffset.png)
+![alt text](./fotos/useearlyoffset.png)
 
 Podemos ver como el status al principio es "Pending", pero a continuación cambia a "Running":
 
-![alt text](statusPending.png)
+![alt text](./fotos/statusPending.png)
 
 Una vez cargados los datos, podemos consultarlos en la pestaña "Query" de la tabla "My_Topic" en el datasource "My_Topic", podemos ver como el número de eventos va aumentando:
 
-![alt text](query1.png)
+![alt text](./fotos/query1.png)
 
-![alt text](query2.png)
+![alt text](./fotos/query2.png)
 
 
 
 
 Para visualizar los datos en Superset, nos conectamos al webUI de Superset en http://localhost:8088 y creamos un nuevo datasource de tipo "Druid":
 
-![alt text](connexionSuperset.png)
+![alt text](./fotos/connexionSuperset.png)
 
 Ahora podemos crear un nuevo dashboard y añadir un gráfico de tipo "Time Series" con los datos de nuestro datasource, tendremos que usar _time como campo temporal y ARR_DELAY como métrica, calculando la media y maximo:
 
-![alt text](supersetchart.png)
+![alt text](./fotos/supersetchart.png)
 
 Si refrescamos se pueden ver los cambios en tiempo real.
