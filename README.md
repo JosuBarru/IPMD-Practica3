@@ -46,9 +46,15 @@ Seleccionamos la opción "Kafka" y rellenamos los campos con la información nec
 
 ![alt text](parse.png)
 
+Vamos a indexar por la columna "FL_DATE" con formato "millis" y 
+
 ![alt text](indexacion.png)
 
+Seleccionamos "Use early offset" y "Status Pending" para que los eventos sean indexados en cuanto lleguen al servidor Druid:
+
 ![alt text](useearlyoffset.png)
+
+Podemos ver como el status al principio es "Pending", pero a continuación cambia a "Running":
 
 ![alt text](statusPending.png)
 
@@ -68,3 +74,5 @@ Para visualizar los datos en Superset, nos conectamos al webUI de Superset en ht
 Ahora podemos crear un nuevo dashboard y añadir un gráfico de tipo "Time Series" con los datos de nuestro datasource, tendremos que usar _time como campo temporal y ARR_DELAY como métrica, calculando la media y maximo:
 
 ![alt text](supersetchart.png)
+
+Si refrescamos se pueden ver los cambios en tiempo real.
