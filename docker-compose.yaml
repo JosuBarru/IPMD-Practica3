@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+
+  kafka_server:
+    image: bitnami/kafka
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    networks:
+      - kafka-net
+
+
+  zookeeper:
+    image: bitnami/zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - kafka-net
+ 
+  kafka-python-productor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true
+    stdin_open: true
+    networks:
+      - kafka-net
+
+  superset:
+    image: acpmialj/ipmd:ssuperset
+    ports:
+      - "8080:8088"
+    networks:
+      - kafka-net 
+
+  druid:
+    image: jdvelasq/druid:0.22.1
+    ports:
+      - "50070:50070"
+      - "8088:8088"
+      - "8888:8888"
+      - "9999:9999"
+    volumes:
+      - "./:/workspace"
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge
+
