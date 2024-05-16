@@ -1,5 +1,7 @@
 # Trabajo Práctico 3
 
+Miembros: Josu Barrutia y Unax Murua
+
 1. [Kafka + Druid + Superset](#Kafka + Druid + Superset)
 
 ## Kafka + Druid + Superset
@@ -76,3 +78,43 @@ Ahora podemos crear un nuevo dashboard y añadir un gráfico de tipo "Time Serie
 ![alt text](./fotos/supersetchart.png)
 
 Si refrescamos se pueden ver los cambios en tiempo real.
+
+ [Kafka + Druid + Superset](#Kafka + Druid + Superset)
+
+## MQTT + Kafka + Druid + Superset
+
+Para el paso MQTT-Kafka vamos a utilizar proxy Kafka-mqtt.
+
+
+###########################################################################################################################3
+Primero vamos a verificar que nuestro programa es capaz de generar eventos MQTT y enviarlos a un servidor mosquitto.
+
+Para empezar, creamos la red mqttnet:
+
+```
+docker network create mqttnet
+```
+
+Vamos a lanzar el servidor mosquitto con la imagen eclipse-mosquitto, que implementa el broker MQTT. Utiliza la configuración que hemos puesto en [config/mosquitto.conf](./config/mosquitto.conf)
+
+```
+docker run -it --rm --name mosquitto --network mqttnet -v ./config:/mosquitto/config eclipse-mosquitto
+```
+
+Ahora lanzamos un contenedor con un cliente MQTT que se suscribe a todos los temas mosquitto_sub:
+```
+docker run -it --rm --network mqttnet efrecon/mqtt-client mosquitto_sub -h mosquitto -p 1883 -t "#" -v
+```
+
+Ahora lanzamos una imagen alpine con python ya instalado:
+```
+docker run -it --rm --network mqttnet -v ./:/workspace python:alpine3.19 sh 
+```
+Ahora instalamos paho-mqtt:
+```
+pip install paho-mqtt
+```
+
+
+#####################################################################################################################
+
