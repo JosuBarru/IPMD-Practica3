@@ -2,4 +2,4 @@ numpy
 PyYAML
 requests
 kafka-python
-paho.mqtt.client
+paho-mqtt

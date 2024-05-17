@@ -40,7 +40,7 @@ docker exec -it ipmd-practica3-kafka-python-productor-1 /bin/bash
 root@62475ba7b318:/kafka_python# python event_generator.py
 ```
 
-En este momento, el productor está enviando eventos al topic "My_Topic". Para que estos eventos sean ingeridos por el servidor Druid, nos conectamos al webUI de Druid en http://localhost:8888 y cargamos datos desde kafka:
+En este momento, el productor está enviando eventos al topic "My_Topic". Para que estos eventos sean ingeridos por el servidor Druid, nos conectamos al webUI de Druid en http://localhost:9999 y cargamos datos desde kafka:
 
 Seleccionamos la opción "Kafka" y rellenamos los campos con la información necesaria para conectarnos al servidor Kafka y al topic "My_Topic":
 
@@ -63,7 +63,6 @@ Podemos ver como el status al principio es "Pending", pero a continuación cambi
 Una vez cargados los datos, podemos consultarlos en la pestaña "Query" de la tabla "My_Topic" en el datasource "My_Topic", podemos ver como el número de eventos va aumentando:
 
 ![alt text](./fotos/query1.png)
-
 ![alt text](./fotos/query2.png)
 
 
@@ -71,7 +70,7 @@ Una vez cargados los datos, podemos consultarlos en la pestaña "Query" de la ta
 
 Para visualizar los datos en Superset, nos conectamos al webUI de Superset en http://localhost:8088 y creamos un nuevo datasource de tipo "Druid":
 
-![alt text](./fotos/connexionSuperset.png)
+![alt text](./fotos/conexionSuperset.png)
 
 Ahora podemos crear un nuevo dashboard y añadir un gráfico de tipo "Time Series" con los datos de nuestro datasource, tendremos que usar _time como campo temporal y ARR_DELAY como métrica, calculando la media y maximo:
 
@@ -85,36 +84,29 @@ Si refrescamos se pueden ver los cambios en tiempo real.
 
 Para el paso MQTT-Kafka vamos a utilizar proxy Kafka-mqtt.
 
+Ahora el producer pasará a ser el generador MQTT, que será el que envíe mensajes al proxy Kafka-MQTT.
 
-###########################################################################################################################3
-Primero vamos a verificar que nuestro programa es capaz de generar eventos MQTT y enviarlos a un servidor mosquitto.
+Se ha creado otro fichero compose [docker-compose-mqtt.yaml](./docker-compose-mqtt.yaml) que es una modificación del original [docker-compose.yaml](./docker-compose.yaml). Esta vez, se ha sustituido el productor, kafka-python-productor, por el generador MQTT y el proxy Kafka-mqtt. El generador se construye a partir del fichero Dockerfile, el mismo que el productor en el apartado anterior, que instala las librerías necesarias para ejecutar [mqtt_generator.py](./mqtt_generator.py) y enviar mensajes al topic "My_Topic" utilizando la información del fichero config.yaml.
 
-Para empezar, creamos la red mqttnet:
-
-```
-docker network create mqttnet
-```
-
-Vamos a lanzar el servidor mosquitto con la imagen eclipse-mosquitto, que implementa el broker MQTT. Utiliza la configuración que hemos puesto en [config/mosquitto.conf](./config/mosquitto.conf)
+Lanzamos los servicios con `docker-compose -f docker-compose-mqtt.yaml up -d` y nos conectamos al generador para ejecutar [mqtt_generator.py](./mqtt_generator.py) y enviar los mensajes.
 
 ```
-docker run -it --rm --name mosquitto --network mqttnet -v ./config:/mosquitto/config eclipse-mosquitto
+docker exec -it ipmd-practica3-mqtt_generator-1 /bin/bash
+root@92bca9f73589:/kafka_python# python mqtt_generator.py 
 ```
 
-Ahora lanzamos un contenedor con un cliente MQTT que se suscribe a todos los temas mosquitto_sub:
-```
-docker run -it --rm --network mqttnet efrecon/mqtt-client mosquitto_sub -h mosquitto -p 1883 -t "#" -v
-```
+Ahora nos conectamos a la UI de druid entrando en http://localhost:9999. Le damos a load data y seleccionamos kafka. Rellenamos los campos igual que antes: Bootstrap_Servers = kafka_server:9092 y Topic = My_Topic. 
 
-Ahora lanzamos una imagen alpine con python ya instalado:
-```
-docker run -it --rm --network mqttnet -v ./:/workspace python:alpine3.19 sh 
-```
-Ahora instalamos paho-mqtt:
-```
-pip install paho-mqtt
-```
+![alt text](./fotos/parte2connect2Druid.png)
+
+A partir de aquí es lo mismo que en la parte anterior.
+
+Podemos ver que funcionan correctamenet las queries en Druid:
+
+![alt text](./fotos/parte2Druid.png)
+![alt text](./fotos/parte2Druid2.png)
 
 
-#####################################################################################################################
+En cuanto a Superset, también funciona, conectandonos a http://localhost:8080 e introduciento el URI: `druid://druid/druid/v2/sql`. Podemos ver que funciona correctamente volviendo a mostrar el mismo gráfico que en la primera parte:
 
+![alt text](./fotos/parte2Superset.png)

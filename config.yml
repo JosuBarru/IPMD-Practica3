@@ -5,3 +5,7 @@ PRODUCER:
 CONSUMER:
   BROKER: 'kafka_server:9092'
   TOPIC: 'My_Topic'
+
+GENERADOR:
+  BROKER: 'kafka_mqtt_proxy'
+  TOPIC: 'My_Topic'
