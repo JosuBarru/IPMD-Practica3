@@ -17,24 +17,18 @@ services:
       - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka_server:9092
       - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092
-      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-      - KAFKA_CONFLUENT_TOPIC_REPLICATION_FACTOR=1
     networks:
       - mqttnet
     depends_on:
       - zookeeper
-    healthcheck: #Aseguramos que zookeeper esta en marcha primero
-      test: ["CMD", "kafka-topics.sh", "--list", "--zookeeper", "zookeeper:2181"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
 
   kafka_mqtt_proxy:
     image: confluentinc/cp-kafka-mqtt:latest
     environment:
       - KAFKA_MQTT_BOOTSTRAP_SERVERS=PLAINTEXT://kafka_server:9092
-      - KAFKA_MQTT_TOPIC_REGEX_LIST=My_Topic:.*
+      - KAFKA_MQTT_TOPIC_REGEX_LIST= My_Topic:.*
+      - KAFKA_MQTT_CONFLUENT_TOPIC_REPLICATION_FACTOR=1
     networks:
       - mqttnet
     depends_on:

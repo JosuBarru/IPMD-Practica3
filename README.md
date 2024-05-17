@@ -40,7 +40,7 @@ docker exec -it ipmd-practica3-kafka-python-productor-1 /bin/bash
 root@62475ba7b318:/kafka_python# python event_generator.py
 ```
 
-En este momento, el productor está enviando eventos al topic "My_Topic". Para que estos eventos sean ingeridos por el servidor Druid, nos conectamos al webUI de Druid en http://localhost:9999 y cargamos datos desde kafka:
+En este momento, el productor está enviando eventos al topic "My_Topic". Para que estos eventos sean ingeridos por el servidor Druid, nos conectamos al webUI de Druid en http://localhost:8888 y cargamos datos desde kafka:
 
 Seleccionamos la opción "Kafka" y rellenamos los campos con la información necesaria para conectarnos al servidor Kafka y al topic "My_Topic":
 
@@ -88,14 +88,14 @@ Ahora el producer pasará a ser el generador MQTT, que será el que envíe mensa
 
 Se ha creado otro fichero compose [docker-compose-mqtt.yaml](./docker-compose-mqtt.yaml) que es una modificación del original [docker-compose.yaml](./docker-compose.yaml). Esta vez, se ha sustituido el productor, kafka-python-productor, por el generador MQTT y el proxy Kafka-mqtt. El generador se construye a partir del fichero Dockerfile, el mismo que el productor en el apartado anterior, que instala las librerías necesarias para ejecutar [mqtt_generator.py](./mqtt_generator.py) y enviar mensajes al topic "My_Topic" utilizando la información del fichero config.yaml.
 
-Lanzamos los servicios con `docker-compose -f docker-compose-mqtt.yaml up -d` y nos conectamos al generador para ejecutar [mqtt_generator.py](./mqtt_generator.py) y enviar los mensajes.
+Lanzamos los servicios con `docker-compose -f docker-compose_mqtt.yaml up -d` y nos conectamos al generador para ejecutar [mqtt_generator.py](./mqtt_generator.py) y enviar los mensajes.
 
 ```
 docker exec -it ipmd-practica3-mqtt_generator-1 /bin/bash
 root@92bca9f73589:/kafka_python# python mqtt_generator.py 
 ```
 
-Ahora nos conectamos a la UI de druid entrando en http://localhost:9999. Le damos a load data y seleccionamos kafka. Rellenamos los campos igual que antes: Bootstrap_Servers = kafka_server:9092 y Topic = My_Topic. 
+Ahora nos conectamos a la UI de druid entrando en http://localhost:9999. Le damos a load data y seleccionamos kafka. Rellenamos los campos igual que antes: `Bootstrap_Servers = kafka_server:9092` y `Topic = My_Topic`. 
 
 ![alt text](./fotos/parte2connect2Druid.png)
 
