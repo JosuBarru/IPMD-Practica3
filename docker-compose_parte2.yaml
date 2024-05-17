@@ -1,0 +1,77 @@
+version: '3.7'
+
+services:
+
+  zookeeper:
+    image: bitnami/zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - mqttnet
+
+
+  kafka_server:
+    image: bitnami/kafka
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka_server:9092
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_CONFLUENT_TOPIC_REPLICATION_FACTOR=1
+    networks:
+      - mqttnet
+    depends_on:
+      - zookeeper
+    healthcheck: #Aseguramos que zookeeper esta en marcha primero
+      test: ["CMD", "kafka-topics.sh", "--list", "--zookeeper", "zookeeper:2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  kafka_mqtt_proxy:
+    image: confluentinc/cp-kafka-mqtt:latest
+    environment:
+      - KAFKA_MQTT_BOOTSTRAP_SERVERS=PLAINTEXT://kafka_server:9092
+      - KAFKA_MQTT_TOPIC_REGEX_LIST=My_Topic:.*
+    networks:
+      - mqttnet
+    depends_on:
+      - kafka_server
+
+
+  mqtt_generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    tty: true
+    stdin_open: true
+    networks:
+      - mqttnet
+
+
+  superset:
+    image: acpmialj/ipmd:ssuperset
+    ports:
+      - "8080:8088"
+    networks:
+      - mqttnet
+
+
+  druid:
+    image: jdvelasq/druid:0.22.1
+    ports:
+      - "50070:50070"
+      - "8088:8088"
+      - "8888:8888"
+      - "9999:9999"
+    volumes:
+      - "./:/workspace"
+    networks:
+      - mqttnet
+
+
+networks:
+  mqttnet:
+    driver: bridge
